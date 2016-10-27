@@ -90,9 +90,9 @@ int main(int argc, char *argv[])
 	int request_len = 0;
 	char *request_str;
 	char *ptr;
-	char *request_protocol;
-	char *request_cmd;
-	char *request_data;
+	char *request_http_version;
+	char *request_method;
+	char *request_uri;
 
 	struct sockaddr_in serv_addr, cli_addr;
 
@@ -121,15 +121,15 @@ int main(int argc, char *argv[])
 		memcpy(request_str, buffer, request_len);
   		request_str[request_len] = 0;
 
-		request_cmd = strtok (request_str," ");
+		request_method = strtok (request_str," ");
 
-		if(strcmp(request_cmd,"GET") == 0)
+		if(strcmp(request_method,"GET") == 0)
 		{
-			printf("%s\n", request_cmd);
-			request_data = strtok (NULL," ");
-			printf("%s\n", request_data);
-			request_protocol = strtok (NULL," ");
-			printf("%s\n", request_protocol);	
+			printf("%s\n", request_method);
+			request_uri = strtok (NULL," ");
+			printf("%s\n", request_uri);
+			request_http_version = strtok (NULL," ");
+			printf("%s\n", request_http_version);	
 		}
 		free(request_str);
 		free(buffer);
