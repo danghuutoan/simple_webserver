@@ -7,7 +7,7 @@
 #include <sys/types.h> 
 #include <sys/socket.h>
 #include <netinet/in.h>
-
+#include <netdb.h>
 
 char *header = 
 "HTTP/1.1 200 OK\r\n"
@@ -54,6 +54,33 @@ int web_socket_read(char **buffer, int fd)
 	return received_bytes;
 }
 
+/* copy from http://beej.us/guide/bgnet/output/html/multipage/syscalls.html
+	thank you a lots for creating such a great tutorial */
+int socket_init(char *portno)
+{
+   struct sockaddr_storage their_addr;
+    socklen_t addr_size;
+    struct addrinfo hints, *res;
+    int sockfd, new_fd;
+
+    // !! don't forget your error checking for these calls !!
+
+    // first, load up address structs with getaddrinfo():
+    memset(&hints, 0, sizeof hints);
+    hints.ai_family = AF_UNSPEC;  // use IPv4 or IPv6, whichever
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_flags = AI_PASSIVE;     // fill in my IP for me
+
+    getaddrinfo(NULL, portno, &hints, &res);
+
+    // make a socket, bind it, and listen on it:
+    sockfd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
+    bind(sockfd, res->ai_addr, res->ai_addrlen);
+    listen(sockfd, 10);
+
+	return sockfd;
+
+}
 int main(int argc, char *argv[])
 {
 	int sockfd, newsockfd, portno;
@@ -74,26 +101,12 @@ int main(int argc, char *argv[])
 	 exit(1);
 	}
 
-	sockfd = socket(AF_INET, SOCK_STREAM, 0);
-	if (sockfd < 0) 
-	error("ERROR opening socket");
-	bzero((char *) &serv_addr, sizeof(serv_addr));
-	portno = atoi(argv[1]);
-	serv_addr.sin_family = AF_INET;
-	serv_addr.sin_addr.s_addr = INADDR_ANY;
-	serv_addr.sin_port = htons(portno);
+	sockfd = socket_init(argv[1]);
 
-	if (bind(sockfd, (struct sockaddr *) &serv_addr,
-	      sizeof(serv_addr)) < 0) 
-	      error("ERROR on binding");
-
-	listen(sockfd,5);
 	clilen = sizeof(cli_addr);
 	while(1)
 	{
-		newsockfd = accept(sockfd, 
-	         (struct sockaddr *) &cli_addr, 
-	         &clilen);
+		newsockfd = accept(sockfd, (struct sockaddr *) &cli_addr, &clilen);
 
 		if (newsockfd < 0) 
 		  error("ERROR on accept");
