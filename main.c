@@ -48,7 +48,6 @@ int web_socket_read(char **buffer, int fd)
 		temp = *buffer + received_bytes;
 		n = recv(fd, temp, 256, 0);
 		received_bytes += n;
-		printf("received_bytes %d\n", received_bytes);
 		if (n < 0) error("ERROR reading from socket");
 	}
 	return received_bytes;
@@ -58,10 +57,8 @@ int web_socket_read(char **buffer, int fd)
 	thank you a lots for creating such a great tutorial */
 int socket_init(char *portno)
 {
-	struct sockaddr_storage their_addr;
-    socklen_t addr_size;
     struct addrinfo hints, *res;
-    int sockfd, new_fd;
+    int sockfd;
 
     // !! don't forget your error checking for these calls !!
 
@@ -90,10 +87,9 @@ void http_parser(char *request_str, char **method, char **uri, char **http_versi
 }
 int main(int argc, char *argv[])
 {
-	int sockfd, newsockfd, portno;
+	int sockfd, newsockfd;
 	socklen_t clilen;
 	char *buffer = NULL;
-	int recv_len = 0;
 	int request_len = 0;
 	char *request_str;
 	char *ptr;
@@ -101,7 +97,7 @@ int main(int argc, char *argv[])
 	char *request_method;
 	char *request_uri;
 
-	struct sockaddr_in serv_addr, cli_addr;
+	struct sockaddr_in cli_addr;
 
 	if (argc < 2) {
 	 fprintf(stderr,"ERROR, no port provided\n");
@@ -119,7 +115,7 @@ int main(int argc, char *argv[])
 		  error("ERROR on accept");
 
 		printf("waiting for request\n");
-		recv_len = web_socket_read(&buffer, newsockfd);
+		web_socket_read(&buffer, newsockfd);
 
 		/* searching for the first \r\n string */
   		ptr = strstr(buffer,"\r\n");
