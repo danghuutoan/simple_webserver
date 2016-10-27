@@ -81,6 +81,13 @@ int socket_init(char *portno)
 	return sockfd;
 
 }
+
+void http_parser(char *request_str, char **method, char **uri, char **http_version)
+{
+		*method = strtok (request_str," ");
+		*uri = strtok (NULL," ");
+		*http_version = strtok (NULL," ");
+}
 int main(int argc, char *argv[])
 {
 	int sockfd, newsockfd, portno;
@@ -121,16 +128,13 @@ int main(int argc, char *argv[])
 		memcpy(request_str, buffer, request_len);
   		request_str[request_len] = 0;
 
-		request_method = strtok (request_str," ");
-
-		if(strcmp(request_method,"GET") == 0)
-		{
-			printf("%s\n", request_method);
-			request_uri = strtok (NULL," ");
-			printf("%s\n", request_uri);
-			request_http_version = strtok (NULL," ");
-			printf("%s\n", request_http_version);	
-		}
+  		http_parser(request_str, &request_method, &request_uri, 
+  			&request_http_version);
+  		
+		printf("%s\n", request_method);
+		printf("%s\n", request_uri);
+		printf("%s\n", request_http_version);	
+	
 		free(request_str);
 		free(buffer);
 		send(newsockfd, html_txt, strlen(html_txt), 0);
