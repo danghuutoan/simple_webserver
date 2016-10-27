@@ -79,12 +79,20 @@ int socket_init(char *portno)
 
 }
 
-void http_parser(char *request_str, char **method, char **uri, char **http_version)
+void http_parser(char *request_str, char **method, char **uri,
+	char **http_version, void (*function_callback)(char * p_method))
 {
 	*method = strtok (request_str," ");
 	*uri = strtok (NULL," ");
 	*http_version = strtok (NULL," ");
+	(*function_callback)(*method);
 }
+
+void function_callback(char * p_method)
+{
+	printf("%s:%s\n", __FUNCTION__, p_method);
+}
+
 int main(int argc, char *argv[])
 {
 	int sockfd, newsockfd;
@@ -96,7 +104,6 @@ int main(int argc, char *argv[])
 	char *request_http_version;
 	char *request_method;
 	char *request_uri;
-
 	struct sockaddr_in cli_addr;
 
 	if (argc < 2) {
@@ -124,8 +131,8 @@ int main(int argc, char *argv[])
 		memcpy(request_str, buffer, request_len);
   		request_str[request_len] = 0;
 
-  		http_parser(request_str, &request_method, &request_uri, 
-  			&request_http_version);
+		http_parser(request_str, &request_method, &request_uri,
+			&request_http_version, &function_callback);
 
 		printf("%s\n", request_method);
 		printf("%s\n", request_uri);
