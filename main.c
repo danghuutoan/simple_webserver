@@ -58,7 +58,7 @@ int web_socket_read(char **buffer, int fd)
 	thank you a lots for creating such a great tutorial */
 int socket_init(char *portno)
 {
-   struct sockaddr_storage their_addr;
+	struct sockaddr_storage their_addr;
     socklen_t addr_size;
     struct addrinfo hints, *res;
     int sockfd, new_fd;
@@ -84,9 +84,9 @@ int socket_init(char *portno)
 
 void http_parser(char *request_str, char **method, char **uri, char **http_version)
 {
-		*method = strtok (request_str," ");
-		*uri = strtok (NULL," ");
-		*http_version = strtok (NULL," ");
+	*method = strtok (request_str," ");
+	*uri = strtok (NULL," ");
+	*http_version = strtok (NULL," ");
 }
 int main(int argc, char *argv[])
 {
@@ -130,7 +130,7 @@ int main(int argc, char *argv[])
 
   		http_parser(request_str, &request_method, &request_uri, 
   			&request_http_version);
-  		
+
 		printf("%s\n", request_method);
 		printf("%s\n", request_uri);
 		printf("%s\n", request_http_version);	
