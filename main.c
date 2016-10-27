@@ -14,9 +14,10 @@ char *header =
 "Date: Mon, 27 Jul 2009 12:28:53 GMT\r\n"
 "Server: Apache/2.2.14 (Win32)\r\n"
 "Last-Modified: Wed, 22 Jul 2009 19:15:56 GMT\r\n"
-"Content-Length: 100\r\n"
+"Content-Length: 200\r\n"
 "Content-Type: text/html\r\n"
-"Connection: Closed\r\n";
+"Connection: Closed\r\n"
+"\r\n";
 
 char *html_txt =
 "<!DOCTYPE HTML>\r\n" 
@@ -78,8 +79,8 @@ int socket_init(char *portno)
 
 }
 
-void http_parser(char *buffer, char **method, char **uri,
-	char **http_version, void (*function_callback)(char *method, char *uri,
+void http_parser(int fd, char *buffer, char **method, char **uri,
+	char **http_version, void (*function_callback)(int fd, char *method, char *uri,
 		char *http_version))
 {
 	char *request_str;
@@ -87,14 +88,17 @@ void http_parser(char *buffer, char **method, char **uri,
 	*method = strtok (request_str," ");
 	*uri = strtok (NULL," ");
 	*http_version = strtok (NULL," ");
-	(*function_callback)(*method, *uri, *http_version);
+	(*function_callback)(fd, *method, *uri, *http_version);
 }
 
-void function_callback(char *method, char *uri, char *http_version)
+void function_callback(int fd, char *method, char *uri, char *http_version)
 {
 	printf("%s:%s\n", __FUNCTION__, method);
 	printf("%s:%s\n", __FUNCTION__, uri);
 	printf("%s:%s\n", __FUNCTION__, http_version);
+
+	send(fd, header, strlen(header), 0);
+	send(fd, html_txt, strlen(html_txt), 0);
 }
 
 int main(int argc, char *argv[])
@@ -125,11 +129,10 @@ int main(int argc, char *argv[])
 		printf("waiting for request\n");
 		web_socket_read(&buffer, newsockfd);
 
-		http_parser(buffer, &request_method, &request_uri,
+		http_parser(newsockfd, buffer, &request_method, &request_uri,
 			&request_http_version, function_callback);
 
 		free(buffer);
-		send(newsockfd, html_txt, strlen(html_txt), 0);
 	}
 
 	close(newsockfd);
