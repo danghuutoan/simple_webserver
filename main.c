@@ -79,9 +79,11 @@ int socket_init(char *portno)
 
 }
 
-void http_parser(char *request_str, char **method, char **uri,
+void http_parser(char *buffer, char **method, char **uri,
 	char **http_version, void (*function_callback)(char * p_method))
 {
+	char *request_str;
+	request_str = strtok(buffer,"\r\n");
 	*method = strtok (request_str," ");
 	*uri = strtok (NULL," ");
 	*http_version = strtok (NULL," ");
@@ -98,9 +100,6 @@ int main(int argc, char *argv[])
 	int sockfd, newsockfd;
 	socklen_t clilen;
 	char *buffer = NULL;
-	int request_len = 0;
-	char *request_str;
-	char *ptr;
 	char *request_http_version;
 	char *request_method;
 	char *request_uri;
@@ -124,21 +123,13 @@ int main(int argc, char *argv[])
 		printf("waiting for request\n");
 		web_socket_read(&buffer, newsockfd);
 
-		/* searching for the first \r\n string */
-  		ptr = strstr(buffer,"\r\n");
-  		request_len = ptr - buffer ;
-  		request_str = malloc(sizeof(char)*request_len +1);
-		memcpy(request_str, buffer, request_len);
-  		request_str[request_len] = 0;
-
-		http_parser(request_str, &request_method, &request_uri,
-			&request_http_version, &function_callback);
+		http_parser(buffer, &request_method, &request_uri,
+			&request_http_version, function_callback);
 
 		printf("%s\n", request_method);
 		printf("%s\n", request_uri);
 		printf("%s\n", request_http_version);	
-	
-		free(request_str);
+
 		free(buffer);
 		send(newsockfd, html_txt, strlen(html_txt), 0);
 	}
